@@ -1402,15 +1402,6 @@ function openLockOverlay(context = "app") {
   resetLogoutSwipeGate();
   lockContext = context;
   configureLockMode();
-  if (lockContext === "security") {
-    lockMode = "unlock";
-    showPasscodeBtn.textContent = "Use PIN";
-    retryTouchIdBtn.classList.add("hidden-module");
-    pinPadPanel.classList.add("hidden-module");
-    pinPadValue = "";
-    pendingSetupPin = "";
-    updatePinDots();
-  }
   setScreen("lock");
   setTimeout(() => {
     pinPadPanel.focus?.();
