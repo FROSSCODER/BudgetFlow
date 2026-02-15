@@ -1076,13 +1076,18 @@ function initSettingsAccordion() {
 
   const securitySummary = securitySettingsGroup?.querySelector("summary");
   if (securitySummary) {
-    securitySummary.addEventListener("click", (event) => {
+    const openSecurityGate = (event) => {
       if (securitySettingsGroup.open) return;
       const active = ensureActiveAccount();
       if (!hasAccountPasscode(active)) return;
       event.preventDefault();
+      event.stopPropagation();
+      if (lockOverlay.classList.contains("active-screen")) return;
       openLockOverlay("security");
-    });
+    };
+
+    securitySummary.addEventListener("click", openSecurityGate);
+    securitySummary.addEventListener("touchend", openSecurityGate, { passive: false });
   }
 
   settingsGroups.forEach((group) => {
