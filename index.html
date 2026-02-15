@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BudgetFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+
+    <div id="loggedOutScreen" class="logged-out-screen">
+      <div class="logged-out-wrap">
+        <h1 class="logged-out-title main-brand-title">BudgetFlow</h1>
+        <div id="loggedOutProfiles" class="logged-out-profiles" aria-label="Choose profile"></div>
+        <button id="toggleOtherProfilesBtn" type="button" class="show-other-profiles-btn">Show Other Profiles</button>
+      </div>
+    </div>
+
+    <div id="addProfileScreen" class="logged-out-screen add-profile-screen">
+      <div class="logged-out-wrap add-profile-wrap">
+        <h1 class="logged-out-title">Add New Profile</h1>
+        <form id="addProfilePageForm" class="settings-grid add-profile-form">
+          <label>
+            <span>Profile Name</span>
+            <input id="newProfileNameInput" type="text" maxlength="40" placeholder="Profile name" required />
+          </label>
+          <label>
+            <span>Passcode</span>
+            <input id="newProfilePasscodeInput" type="password" autocomplete="off" required />
+          </label>
+          <label>
+            <span>Confirm Passcode</span>
+            <input id="newProfileConfirmInput" type="password" autocomplete="off" required />
+          </label>
+          <label class="toggle-row" for="newProfileTouchIdInput">
+            <span>Enable Biometrics</span>
+            <input id="newProfileTouchIdInput" type="checkbox" />
+          </label>
+          <button type="submit">Create Profile</button>
+          <button id="cancelAddProfileBtn" type="button" class="secondary-btn">Cancel</button>
+        </form>
+        <p id="addProfileMessage" class="tiny-muted"></p>
+      </div>
+    </div>
+
+    <div id="lockOverlay" class="lock-overlay">
+      <article class="lock-card portrait-lock">
+        <button id="lockBackBtn" type="button" class="lock-back-btn secondary-btn" aria-label="Back to login">←</button>
+        <div id="lockPadlock" class="lock-padlock" aria-hidden="true">
+          <div class="padlock-shackle"></div>
+          <div class="padlock-body">
+            <span class="padlock-keyhole"></span>
+          </div>
+        </div>
+        <h2 id="lockTitle">Unlock BudgetFlow</h2>
+        <p id="lockHint" class="tiny-muted">Enter your passcode to continue.</p>
+        <form id="lockForm" class="settings-grid">
+          <p id="lockTouchPrompt" class="lock-touch-prompt">Unlock with Biometrics now</p>
+          <button id="showPasscodeBtn" type="button" class="secondary-btn hidden-module">
+            Use Passcode Instead
+          </button>
+          <button id="retryTouchIdBtn" type="button" class="secondary-btn hidden-module">Try Biometrics Again</button>
+          <div id="pinPadPanel" class="pinpad-panel hidden-module">
+            <div id="pinPadDots" class="pinpad-dots" aria-label="PIN entry"></div>
+            <div class="pinpad-grid">
+              <button type="button" class="pin-key" data-pin-key="1">1</button>
+              <button type="button" class="pin-key" data-pin-key="2">2</button>
+              <button type="button" class="pin-key" data-pin-key="3">3</button>
+              <button type="button" class="pin-key" data-pin-key="4">4</button>
+              <button type="button" class="pin-key" data-pin-key="5">5</button>
+              <button type="button" class="pin-key" data-pin-key="6">6</button>
+              <button type="button" class="pin-key" data-pin-key="7">7</button>
+              <button type="button" class="pin-key" data-pin-key="8">8</button>
+              <button type="button" class="pin-key" data-pin-key="9">9</button>
+              <button type="button" class="pin-key pin-key-muted" data-pin-action="clear">Clear</button>
+              <button type="button" class="pin-key" data-pin-key="0">0</button>
+              <button type="button" class="pin-key pin-key-muted" data-pin-action="delete">⌫</button>
+            </div>
+          </div>
+          <div id="passcodeFields" class="settings-grid hidden-module">
+            <label>
+              <span>Passcode</span>
+              <input id="lockPasscodeInput" type="password" autocomplete="off" />
+            </label>
+            <label id="lockConfirmGroup" class="hidden-module">
+              <span>Confirm Passcode</span>
+              <input id="lockConfirmInput" type="password" autocomplete="off" />
+            </label>
+            <button id="lockSubmitButton" type="submit">Unlock</button>
+          </div>
+        </form>
+        <p id="lockMessage" class="tiny-muted"></p>
+      </article>
+    </div>
+
+    <main id="appShell" class="app-shell app-locked">
+      <header class="topbar">
+        <div class="topbar-main">
+          <p class="eyebrow">Personal Finance</p>
+          <h1>BudgetFlow</h1>
+        </div>
+        <div class="status-bar" aria-label="Status bar">
+          <button id="statusLockBtn" class="status-lock-btn" type="button" aria-label="Lock App">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2zm-6 7.73V17a1 1 0 1 0 2 0v-.27a2 2 0 1 0-2 0zM10 9V7a2 2 0 1 1 4 0v2h-4z"
+              />
+            </svg>
+          </button>
+          <button id="statusSettingsBtn" class="status-settings-btn" type="button" aria-label="Open Settings">
+            <span class="icon-stack" aria-hidden="true">
+              <svg class="icon-gear" viewBox="0 0 24 24" width="17" height="17">
+                <path
+                  fill="currentColor"
+                  d="M19.14 12.94a7.5 7.5 0 0 0 .05-.94 7.5 7.5 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.14 7.14 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.57.22-1.11.53-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.7 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.5 7.5 0 0 0-.05.94 7.5 7.5 0 0 0 .05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.41 1.05.72 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.57-.22 1.11-.53 1.62-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64zM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5z"
+                />
+              </svg>
+              <svg class="icon-back" viewBox="0 0 24 24" width="17" height="17">
+                <path fill="currentColor" d="M20 11H7.83l4.58-4.59L11 5l-7 7 7 7 1.41-1.41L7.83 13H20v-2z" />
+              </svg>
+            </span>
+          </button>
+          <span id="statusTime" class="status-chip">--:--</span>
+          <div class="account-menu-wrap">
+            <button id="statusAccountBtn" class="status-chip account-chip" type="button">
+              <span id="statusAccountName">Finn Ross</span>
+            </button>
+            <div id="accountMenu" class="account-menu hidden-module" aria-label="Account menu">
+              <button id="activeAccountRow" class="account-row" type="button">
+                <span id="activeAccountInitials" class="avatar-circle">FR</span>
+                <span id="activeAccountName">Finn Ross</span>
+              </button>
+              <div id="accountList" class="account-list"></div>
+              <button id="addAccountBtn" class="account-row add-account-row" type="button">
+                <span class="avatar-circle plus-avatar">+</span>
+                <span>Add Profile</span>
+              </button>
+              <button id="logoutBtn" class="logout-btn" type="button">Log Out</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section id="plannerPanel" class="tab-panel active">
+        <section id="moduleSummary" class="grid stats-grid" aria-label="Budget overview">
+          <article class="card stat-card">
+            <h2>Monthly Income</h2>
+            <label>
+              <span>Income</span>
+              <input id="incomeInput" type="number" min="0" step="0.01" value="4000" />
+            </label>
+          </article>
+
+          <article class="card stat-card">
+            <h2>Saving Target</h2>
+            <label>
+              <span>Target</span>
+              <input id="targetInput" type="number" min="0" step="0.01" value="800" />
+            </label>
+          </article>
+
+          <article class="card stat-card accent">
+            <h2>Remaining Budget</h2>
+            <p id="remainingBudget" class="big-number">$0.00</p>
+            <p id="progressText" class="tiny-muted"></p>
+            <p id="cycleText" class="tiny-muted"></p>
+          </article>
+        </section>
+
+        <section class="grid content-grid">
+          <article id="moduleAddExpense" class="card">
+            <h2>Add Expense</h2>
+            <form id="expenseForm" class="expense-form">
+              <label>
+                <span>Date</span>
+                <input id="dateInput" type="date" required />
+              </label>
+              <label>
+                <span>Description</span>
+                <input id="descInput" type="text" placeholder="Groceries, fuel, etc." required />
+              </label>
+              <label>
+                <span>Category</span>
+                <select id="categoryInput" required>
+                  <option>Clothes</option>
+                  <option>Entertainment</option>
+                  <option>Food</option>
+                  <option>Other</option>
+                </select>
+              </label>
+              <label>
+                <span>Amount</span>
+                <input id="amountInput" type="number" min="0.01" step="0.01" required />
+              </label>
+              <button type="submit">Add Expense</button>
+            </form>
+          </article>
+
+          <article id="moduleBreakdown" class="card">
+            <h2>Spending Breakdown</h2>
+            <div id="categoryBars" class="bars"></div>
+          </article>
+        </section>
+
+        <section class="grid content-grid">
+          <article id="moduleExpenses" class="card">
+            <h2>Recent Expenses</h2>
+            <ul id="expenseList" class="expense-list"></ul>
+          </article>
+
+          <article class="card">
+            <h2>Spill Over</h2>
+            <ul id="spillOverList" class="spill-list"></ul>
+            <div id="spillOverTotal" class="spill-total">Total Spill Over: $0.00</div>
+          </article>
+        </section>
+      </section>
+
+      <section id="settingsPanel" class="tab-panel">
+        <article id="profileSettingsSection" class="card settings-card simple-settings">
+          <h2>Settings</h2>
+
+          <details class="settings-group" open>
+            <summary>Profile</summary>
+            <div class="settings-group-body settings-grid">
+              <div class="profile-preview">
+                <span id="profilePreviewAvatar" class="avatar-circle">FR</span>
+                <strong id="profilePreviewName">Finn Ross</strong>
+              </div>
+              <label>
+                <span>Profile Name</span>
+                <input id="profileNameInput" type="text" maxlength="40" placeholder="Your name" />
+              </label>
+              <label>
+                <span>Profile Picture</span>
+                <input id="profileImageInput" type="file" accept="image/*" />
+              </label>
+              <button id="clearProfileImageBtn" type="button" class="secondary-btn">Remove Profile Picture</button>
+              <div class="settings-subsection">
+                <strong>Manage Profiles</strong>
+                <div id="profilesManager" class="profiles-manager"></div>
+                <button id="openAddProfilePageBtn" type="button" class="secondary-btn">Add New Profile</button>
+              </div>
+            </div>
+          </details>
+
+          <details class="settings-group">
+            <summary>Appearance</summary>
+            <div class="settings-group-body settings-grid">
+              <label>
+                <span>Currency</span>
+                <select id="currencyInput">
+                  <option value="NZD">NZD ($)</option>
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                </select>
+              </label>
+              <label>
+                <span>Colour Scheme</span>
+                <select id="themeInput">
+                  <option value="ocean">Ocean Blue</option>
+                  <option value="deepblue">Dark Blue</option>
+                  <option value="forest">Forest Green</option>
+                  <option value="sunset">Sunset Orange</option>
+                  <option value="rose">Rose Pink</option>
+                  <option value="mint">Mint Fresh</option>
+                  <option value="slate">Slate Gray</option>
+                  <option value="gold">Golden Hour</option>
+                  <option value="berry">Berry Violet</option>
+                </select>
+              </label>
+              <label class="toggle-row" for="compactInput">
+                <span>Compact Mode</span>
+                <input id="compactInput" type="checkbox" />
+              </label>
+              <label class="toggle-row" for="darkModeInput">
+                <span>Dark Mode</span>
+                <input id="darkModeInput" type="checkbox" />
+              </label>
+              <label class="toggle-row" for="iphoneModeInput">
+                <span>iPhone Mode (SE Portrait)</span>
+                <input id="iphoneModeInput" type="checkbox" />
+              </label>
+              <label class="toggle-row" for="darkModeScheduleInput">
+                <span>Scheduled Dark Mode</span>
+                <input id="darkModeScheduleInput" type="checkbox" />
+              </label>
+              <label>
+                <span>Dark Mode Starts</span>
+                <input id="darkModeStartInput" type="time" value="21:00" />
+              </label>
+              <label>
+                <span>Dark Mode Ends</span>
+                <input id="darkModeEndInput" type="time" value="07:00" />
+              </label>
+            </div>
+          </details>
+
+          <details class="settings-group">
+            <summary>Budget</summary>
+            <div class="settings-group-body settings-grid">
+              <label>
+                <span>Budget Cycle Starts Day</span>
+                <input id="cycleDayInput" type="number" min="1" max="28" step="1" value="1" />
+              </label>
+              <div class="module-toggles">
+                <label class="toggle-row" for="toggleSummary">
+                  <span>Summary</span>
+                  <input id="toggleSummary" type="checkbox" checked />
+                </label>
+                <label class="toggle-row" for="toggleAddExpense">
+                  <span>Add Expense</span>
+                  <input id="toggleAddExpense" type="checkbox" checked />
+                </label>
+                <label class="toggle-row" for="toggleBreakdown">
+                  <span>Breakdown</span>
+                  <input id="toggleBreakdown" type="checkbox" checked />
+                </label>
+                <label class="toggle-row" for="toggleExpenses">
+                  <span>Recent Expenses</span>
+                  <input id="toggleExpenses" type="checkbox" checked />
+                </label>
+              </div>
+            </div>
+          </details>
+
+          <details id="securitySettingsGroup" class="settings-group">
+            <summary>Security</summary>
+            <div class="settings-group-body settings-grid">
+              <form id="changePasscodeForm" class="settings-grid">
+                <label>
+                  <span>Current Passcode</span>
+                  <input id="currentPasscodeInput" type="password" autocomplete="off" required />
+                </label>
+                <label>
+                  <span>New Passcode</span>
+                  <input id="newPasscodeInput" type="password" autocomplete="off" required />
+                </label>
+                <label>
+                  <span>Confirm New Passcode</span>
+                  <input id="confirmPasscodeInput" type="password" autocomplete="off" required />
+                </label>
+                <button type="submit">Change Passcode</button>
+              </form>
+              <div class="settings-grid">
+                <button id="enableTouchIdBtn" type="button" class="secondary-btn">Enable Biometrics</button>
+                <button id="disableTouchIdBtn" type="button" class="secondary-btn">Disable Biometrics</button>
+              </div>
+              <label class="toggle-row" for="autoWipeInput">
+                <span>Auto Wipe After Repeated Failures</span>
+                <input id="autoWipeInput" type="checkbox" />
+              </label>
+              <label class="toggle-row" for="panicShortcutInput">
+                <span>Panic Shortcut (Ctrl/Cmd + Shift + L)</span>
+                <input id="panicShortcutInput" type="checkbox" />
+              </label>
+              <div class="settings-grid">
+                <label>
+                  <span>Backup Passphrase</span>
+                  <input id="backupPassphraseInput" type="password" autocomplete="off" placeholder="Required for export/import" />
+                </label>
+                <button id="exportBackupBtn" type="button" class="secondary-btn">Export Encrypted Backup</button>
+                <button id="importBackupBtn" type="button" class="secondary-btn">Import Encrypted Backup</button>
+                <input id="importBackupFileInput" type="file" accept=".json,application/json" class="hidden-module" />
+              </div>
+              <p id="touchIdStatus" class="tiny-muted"></p>
+              <p id="passcodeMessage" class="tiny-muted"></p>
+              <p id="securityToolsMessage" class="tiny-muted"></p>
+            </div>
+          </details>
+
+          <details class="settings-group">
+            <summary>Data</summary>
+            <div class="settings-group-body settings-grid">
+              <button id="resetButton" type="button" class="reset-btn">Reset Budget Data</button>
+            </div>
+          </details>
+        </article>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+    <p class="app-copyright">&copy; BudgetFlow 2025</p>
+  </body>
+</html>
