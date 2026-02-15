@@ -518,18 +518,6 @@ body.dark-theme .logged-out-profile-btn .avatar-circle {
   font-size: 0.8rem;
 }
 
-.app-copyright {
-  position: fixed;
-  left: 12px;
-  bottom: 10px;
-  transform: none;
-  margin: 0;
-  font-size: 0.75rem;
-  color: var(--muted);
-  z-index: 80;
-  pointer-events: none;
-}
-
 .eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.08em;
