@@ -149,6 +149,9 @@ let hiddenAtMs = null;
 let isTouchIdPrompting = false;
 let showOtherProfilesOnLoggedOut = false;
 let addProfileReturnMode = "app";
+let pendingSwipeUnlockAccountId = null;
+let logoutSwipeStartY = null;
+let logoutSwipeStartX = null;
 const DEFAULT_PIN_LENGTH = 6;
 let pinPadStep = "unlock";
 let pinPadValue = "";
@@ -539,6 +542,27 @@ function renderLoggedOutProfiles() {
   if (hasOtherProfiles) {
     toggleOtherProfilesBtn.textContent = showOtherProfilesOnLoggedOut ? "Hide Other Profiles" : "Show Other Profiles";
   }
+}
+
+function shouldUseSwipeUnlock() {
+  return Boolean(state.settings.iphoneMode);
+}
+
+function resetLogoutSwipeGate() {
+  pendingSwipeUnlockAccountId = null;
+  logoutSwipeStartY = null;
+  logoutSwipeStartX = null;
+  loggedOutScreen.classList.remove("swipe-ready");
+}
+
+function armLogoutSwipeGate(accountId) {
+  pendingSwipeUnlockAccountId = accountId;
+  loggedOutScreen.classList.add("swipe-ready");
+}
+
+function completeLogoutSwipeGate() {
+  if (!pendingSwipeUnlockAccountId || !shouldUseSwipeUnlock()) return;
+  openLockOverlay("app");
 }
 
 function renderAccountList() {
@@ -933,6 +957,9 @@ function applyCompactMode() {
 
 function applyIphoneMode() {
   document.body.classList.toggle("iphone-mode", state.settings.iphoneMode);
+  if (!state.settings.iphoneMode) {
+    resetLogoutSwipeGate();
+  }
 }
 
 function applyDarkMode() {
@@ -1071,6 +1098,7 @@ function setScreen(mode) {
 }
 
 function showLoggedOutScreen() {
+  resetLogoutSwipeGate();
   showOtherProfilesOnLoggedOut = false;
   renderLoggedOutProfiles();
   addProfileMessage.textContent = "";
@@ -1345,6 +1373,7 @@ async function authenticateWithTouchId() {
 }
 
 function openLockOverlay(context = "app") {
+  resetLogoutSwipeGate();
   lockContext = context;
   configureLockMode();
   if (lockContext === "security") {
@@ -1640,7 +1669,12 @@ logoutBtn.addEventListener("click", () => {
 loggedOutProfiles.addEventListener("click", (event) => {
   const button = event.target.closest("[data-account-id]");
   if (!button) return;
-  setActiveAccount(button.dataset.accountId);
+  const accountId = button.dataset.accountId;
+  setActiveAccount(accountId);
+  if (shouldUseSwipeUnlock()) {
+    armLogoutSwipeGate(accountId);
+    return;
+  }
   openLockOverlay();
 });
 
@@ -1758,6 +1792,36 @@ document.addEventListener("keydown", (event) => {
     void submitPinPadValue();
   }
 });
+
+loggedOutScreen.addEventListener(
+  "touchstart",
+  (event) => {
+    if (!shouldUseSwipeUnlock() || !pendingSwipeUnlockAccountId) return;
+    const touch = event.changedTouches && event.changedTouches[0];
+    if (!touch) return;
+    logoutSwipeStartY = touch.clientY;
+    logoutSwipeStartX = touch.clientX;
+  },
+  { passive: true }
+);
+
+loggedOutScreen.addEventListener(
+  "touchend",
+  (event) => {
+    if (!shouldUseSwipeUnlock() || !pendingSwipeUnlockAccountId) return;
+    if (logoutSwipeStartY === null || logoutSwipeStartX === null) return;
+    const touch = event.changedTouches && event.changedTouches[0];
+    if (!touch) return;
+    const deltaY = logoutSwipeStartY - touch.clientY;
+    const deltaX = Math.abs(logoutSwipeStartX - touch.clientX);
+    logoutSwipeStartY = null;
+    logoutSwipeStartX = null;
+    if (deltaY > 70 && deltaY > deltaX * 1.2) {
+      completeLogoutSwipeGate();
+    }
+  },
+  { passive: true }
+);
 
 exportBackupBtn.addEventListener("click", async () => {
   const passphrase = backupPassphraseInput.value;

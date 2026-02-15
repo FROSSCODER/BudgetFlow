@@ -431,6 +431,13 @@ body.dark-theme .logged-out-screen {
 
 .main-brand-title {
   margin-bottom: 14px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28ch;
+}
+
+.main-brand-title span {
+  display: inline-block;
 }
 
 .logged-out-profile-btn {
@@ -479,6 +486,30 @@ body.dark-theme .logged-out-profile-btn .avatar-circle {
   background: transparent;
   color: var(--muted);
   border: 1px solid var(--line);
+}
+
+.logout-swipe-hint {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  display: none;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.24s ease, transform 0.24s ease;
+}
+
+.swipe-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  font-size: 0.8rem;
 }
 
 .app-copyright {
@@ -1218,6 +1249,34 @@ body.iphone-mode .big-number {
 
 body.iphone-mode #settingsPanel.active {
   max-height: calc(100dvh - 170px);
+}
+
+body.iphone-mode .main-brand-title {
+  display: grid;
+  gap: 0;
+  line-height: 0.87;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: clamp(4.2rem, 22vw, 6.1rem);
+  letter-spacing: -0.02em;
+}
+
+body.iphone-mode .main-brand-title span {
+  display: block;
+}
+
+body.iphone-mode .logout-swipe-hint {
+  display: inline-flex;
+}
+
+body.iphone-mode .logged-out-screen.swipe-ready .logout-swipe-hint {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body.iphone-mode .logged-out-screen.swipe-ready .logged-out-profile-btn.is-active .avatar-circle {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(31, 122, 236, 0.2);
 }
 
 @media (max-width: 900px) {
