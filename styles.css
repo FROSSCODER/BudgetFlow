@@ -1133,6 +1133,11 @@ body.dark-theme .pin-key-muted {
   display: block;
 }
 
+body.iphone-mode .pin-key-icon img {
+  width: 44px;
+  height: 44px;
+}
+
 .portrait-lock .settings-grid {
   width: 100%;
 }
