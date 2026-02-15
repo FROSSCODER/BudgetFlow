@@ -1039,10 +1039,14 @@ function renderTileMoveControls() {
     const controls = document.createElement("div");
     controls.className = "tile-move-controls";
 
+    const label = document.createElement("span");
+    label.className = "tile-move-label";
+    label.textContent = "Move:";
+
     const up = document.createElement("button");
     up.type = "button";
     up.className = "tile-move-btn";
-    up.textContent = "↑";
+    up.textContent = "Up";
     up.title = "Move up";
     up.disabled = index === 0;
     up.addEventListener("click", (event) => {
@@ -1054,7 +1058,7 @@ function renderTileMoveControls() {
     const down = document.createElement("button");
     down.type = "button";
     down.className = "tile-move-btn";
-    down.textContent = "↓";
+    down.textContent = "Down";
     down.title = "Move down";
     down.disabled = index === order.length - 1;
     down.addEventListener("click", (event) => {
@@ -1063,7 +1067,7 @@ function renderTileMoveControls() {
       movePlannerTile(id, 1);
     });
 
-    controls.append(up, down);
+    controls.append(label, up, down);
     tile.prepend(controls);
   });
 }
