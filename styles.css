@@ -1137,6 +1137,14 @@ body.dark-theme .pin-key-muted {
   display: block;
 }
 
+.pin-key-icon img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  border-radius: 4px;
+  display: block;
+}
+
 .portrait-lock .settings-grid {
   width: 100%;
 }
