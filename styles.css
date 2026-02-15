@@ -1255,6 +1255,10 @@ body.iphone-mode .topbar {
   margin-bottom: 12px;
 }
 
+body.iphone-mode .topbar-main {
+  text-align: center;
+}
+
 body.iphone-mode .topbar-main h1 {
   font-size: 1.7rem;
 }
