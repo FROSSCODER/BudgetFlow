@@ -15,6 +15,7 @@ const retryTouchIdBtn = document.getElementById("retryTouchIdBtn");
 const pinPadPanel = document.getElementById("pinPadPanel");
 const pinPadDots = document.getElementById("pinPadDots");
 const pinKeys = Array.from(document.querySelectorAll(".pin-key"));
+const pinBiometricBtn = document.getElementById("pinBiometricBtn");
 const passcodeFields = document.getElementById("passcodeFields");
 const lockPasscodeInput = document.getElementById("lockPasscodeInput");
 const lockConfirmGroup = document.getElementById("lockConfirmGroup");
@@ -157,6 +158,7 @@ let pinPadStep = "unlock";
 let pinPadValue = "";
 let pendingSetupPin = "";
 let lockContext = "app";
+let isSwipeUnlockTransitioning = false;
 
 function createBudgetData(overrides = {}) {
   return {
@@ -552,7 +554,10 @@ function resetLogoutSwipeGate() {
   pendingSwipeUnlockAccountId = null;
   logoutSwipeStartY = null;
   logoutSwipeStartX = null;
+  isSwipeUnlockTransitioning = false;
   loggedOutScreen.classList.remove("swipe-ready");
+  loggedOutScreen.classList.remove("swipe-transitioning");
+  lockOverlay.classList.remove("swipe-enter");
 }
 
 function armLogoutSwipeGate(accountId) {
@@ -561,8 +566,16 @@ function armLogoutSwipeGate(accountId) {
 }
 
 function completeLogoutSwipeGate() {
-  if (!pendingSwipeUnlockAccountId || !shouldUseSwipeUnlock()) return;
-  openLockOverlay("app");
+  if (!pendingSwipeUnlockAccountId || !shouldUseSwipeUnlock() || isSwipeUnlockTransitioning) return;
+  isSwipeUnlockTransitioning = true;
+  loggedOutScreen.classList.add("swipe-transitioning");
+  setTimeout(() => {
+    openLockOverlay("app");
+    lockOverlay.classList.add("swipe-enter");
+    setTimeout(() => {
+      lockOverlay.classList.remove("swipe-enter");
+    }, 380);
+  }, 180);
 }
 
 function renderAccountList() {
@@ -1122,7 +1135,7 @@ function configureLockMode() {
     lockTitle.textContent = "Create Passcode";
     lockHint.textContent = `Set a passcode for ${active.name}.`;
     lockTouchPrompt.classList.add("hidden-module");
-    showPasscodeBtn.classList.remove("hidden-module");
+    showPasscodeBtn.classList.add("hidden-module");
     passcodeFields.classList.add("hidden-module");
     lockConfirmGroup.classList.remove("hidden-module");
     lockPasscodeInput.required = false;
@@ -1136,7 +1149,7 @@ function configureLockMode() {
     lockConfirmGroup.classList.add("hidden-module");
     lockConfirmInput.required = false;
     passcodeFields.classList.add("hidden-module");
-    showPasscodeBtn.classList.remove("hidden-module");
+    showPasscodeBtn.classList.add("hidden-module");
     lockPasscodeInput.required = false;
     lockSubmitButton.textContent = "Unlock";
   }
@@ -1156,6 +1169,8 @@ function configureLockMode() {
   if (lockMode === "unlock" && lockRemaining > 0) {
     lockMessage.textContent = `Too many attempts. Try again in ${formatLockDuration(lockRemaining)}.`;
   }
+  syncPinBiometricButton();
+  openPinPad();
 }
 
 function updatePinDots() {
@@ -1175,6 +1190,17 @@ function openPinPad() {
   pinPadValue = "";
   pinPadStep = lockMode === "setup" ? "setup-create" : "unlock";
   updatePinDots();
+  syncPinBiometricButton();
+  pinPadPanel.classList.remove("pinpad-enter");
+  void pinPadPanel.offsetWidth;
+  pinPadPanel.classList.add("pinpad-enter");
+}
+
+function syncPinBiometricButton() {
+  if (!pinBiometricBtn) return;
+  const active = ensureActiveAccount();
+  const show = lockMode === "unlock" && active.touchIdEnabled;
+  pinBiometricBtn.classList.toggle("hidden-module", !show);
 }
 
 function getExpectedPinLength() {
@@ -1387,12 +1413,7 @@ function openLockOverlay(context = "app") {
   }
   setScreen("lock");
   setTimeout(() => {
-    const active = ensureActiveAccount();
-    if (lockMode === "unlock" && active.touchIdEnabled) {
-      authenticateWithTouchId();
-      return;
-    }
-    showPasscodeBtn.focus();
+    pinPadPanel.focus?.();
   }, 120);
 }
 
@@ -1420,9 +1441,7 @@ function failLock(message, options = {}) {
   lockPadlock.classList.remove("error");
   void lockPadlock.offsetWidth;
   lockPadlock.classList.add("error");
-  const active = ensureActiveAccount();
-  const canRetryTouchId = Boolean(options.showTouchRetry && lockMode === "unlock" && active.touchIdEnabled);
-  retryTouchIdBtn.classList.toggle("hidden-module", !canRetryTouchId);
+  retryTouchIdBtn.classList.add("hidden-module");
 }
 
 function runUnlockAnimation() {
@@ -1749,6 +1768,10 @@ pinKeys.forEach((button) => {
     }
     if (action === "clear") {
       clearPinValue();
+      return;
+    }
+    if (action === "biometric") {
+      authenticateWithTouchId();
       return;
     }
     if (action === "delete") {

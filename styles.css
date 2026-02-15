@@ -396,6 +396,7 @@ body.dark-theme .logged-out-screen {
   display: grid;
   justify-items: center;
   gap: 14px;
+  transition: transform 0.34s ease, opacity 0.34s ease;
 }
 
 .add-profile-wrap {
@@ -421,6 +422,11 @@ body.dark-theme .logged-out-screen {
   visibility: visible;
   pointer-events: auto;
   transition: opacity 0.34s ease, transform 0.34s ease;
+}
+
+body.iphone-mode .logged-out-screen.swipe-transitioning .logged-out-wrap {
+  transform: translateY(-80px);
+  opacity: 0;
 }
 
 .logged-out-title {
@@ -1065,7 +1071,12 @@ body.dark-theme .lock-overlay {
 .pinpad-panel {
   width: 100%;
   display: grid;
-  gap: 10px;
+  justify-items: center;
+  gap: 14px;
+}
+
+.pinpad-panel.pinpad-enter {
+  animation: pinpad-rise-in 0.34s cubic-bezier(0.2, 0.75, 0.2, 1);
 }
 
 .pinpad-dots {
@@ -1091,18 +1102,39 @@ body.dark-theme .lock-overlay {
 .pinpad-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
+  width: min(280px, 100%);
 }
 
 .pin-key {
-  min-height: 40px;
+  width: 78px;
+  height: 78px;
+  min-height: 78px;
+  border-radius: 50%;
+  font-size: 1.35rem;
+  font-weight: 700;
   padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--line);
+  box-shadow: none;
 }
 
 .pin-key-muted {
-  background: transparent;
+  background: #f2f5fc;
   color: var(--text);
   border: 1px solid var(--line);
+}
+
+body.dark-theme .pin-key-muted {
+  background: #14233f;
+}
+
+.pin-key-icon svg {
+  display: block;
 }
 
 .portrait-lock .settings-grid {
@@ -1279,6 +1311,10 @@ body.iphone-mode .logged-out-screen.swipe-ready .logged-out-profile-btn.is-activ
   box-shadow: 0 0 0 4px rgba(31, 122, 236, 0.2);
 }
 
+body.iphone-mode .lock-overlay.swipe-enter .portrait-lock {
+  animation: lock-card-rise-in 0.36s cubic-bezier(0.2, 0.75, 0.2, 1);
+}
+
 @media (max-width: 900px) {
   .topbar {
     flex-direction: column;
@@ -1306,6 +1342,28 @@ body.iphone-mode .logged-out-screen.swipe-ready .logged-out-profile-btn.is-activ
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes lock-card-rise-in {
+  from {
+    transform: translateY(52px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pinpad-rise-in {
+  from {
+    transform: translateY(46px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 

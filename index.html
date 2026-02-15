@@ -86,7 +86,21 @@
               <button type="button" class="pin-key" data-pin-key="7">7</button>
               <button type="button" class="pin-key" data-pin-key="8">8</button>
               <button type="button" class="pin-key" data-pin-key="9">9</button>
-              <button type="button" class="pin-key pin-key-muted" data-pin-action="clear">Clear</button>
+              <button
+                id="pinBiometricBtn"
+                type="button"
+                class="pin-key pin-key-icon hidden-module"
+                data-pin-action="biometric"
+                aria-label="Use Biometrics"
+                title="Use Biometrics"
+              >
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M12 2a4 4 0 0 0-4 4v2a1 1 0 1 0 2 0V6a2 2 0 1 1 4 0v2a1 1 0 1 0 2 0V6a4 4 0 0 0-4-4Zm-6 9a1 1 0 0 0-1 1v2a7 7 0 0 0 14 0v-1a1 1 0 1 0-2 0v1a5 5 0 1 1-10 0v-2a1 1 0 0 0-1-1Zm6 3a1 1 0 0 0-1 1v7a1 1 0 1 0 2 0v-7a1 1 0 0 0-1-1Zm-4 1a1 1 0 0 0-1 1v4a5 5 0 0 0 10 0v-2a1 1 0 1 0-2 0v2a3 3 0 0 1-6 0v-4a1 1 0 0 0-1-1Z"
+                  />
+                </svg>
+              </button>
               <button type="button" class="pin-key" data-pin-key="0">0</button>
               <button type="button" class="pin-key pin-key-muted" data-pin-action="delete">⌫</button>
             </div>
