@@ -393,6 +393,72 @@ body.dark-theme .avatar-circle {
   transition: opacity 0.34s ease, transform 0.34s ease, visibility 0s linear 0.34s;
 }
 
+.logged-out-status {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 5;
+}
+
+.logout-language-wrap {
+  position: relative;
+}
+
+.logout-language-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+}
+
+.logout-language-btn:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--primary);
+}
+
+.logout-language-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 130px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 4px;
+}
+
+.logout-language-menu button {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+  padding: 7px 8px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.logout-language-menu button:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--primary);
+}
+
 body.dark-theme .logged-out-screen {
   background: radial-gradient(circle at 10% 10%, #101b34 0%, #0c1428 40%, #091022 100%);
 }
@@ -497,6 +563,10 @@ body.dark-theme .logged-out-profile-btn .avatar-circle {
   background: transparent;
   color: var(--muted);
   border: 1px solid var(--line);
+}
+
+#addProfileFromLogoutBtn {
+  margin-top: -4px;
 }
 
 .logout-swipe-hint {
@@ -1077,6 +1147,60 @@ body.layout-edit-mode .planner-tile {
   transition: opacity 0.34s ease, transform 0.34s ease, visibility 0s linear 0.34s;
 }
 
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(8, 15, 29, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.onboarding-card {
+  width: min(440px, 100%);
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.onboarding-card h2 {
+  margin: 0;
+}
+
+.onboarding-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.onboarding-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.onboarding-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ccd8ef;
+}
+
+.onboarding-dots span.active {
+  background: var(--primary);
+}
+
+.onboarding-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 body.dark-theme .lock-overlay {
   background: radial-gradient(circle at 10% 10%, #101b34 0%, #0c1428 40%, #091022 100%);
 }
@@ -1387,6 +1511,15 @@ body.iphone-mode .main-brand-title {
   margin-bottom: 30px;
   font-size: clamp(4.2rem, 22vw, 6.1rem);
   letter-spacing: -0.02em;
+}
+
+body.iphone-mode .logged-out-status {
+  top: 10px;
+  right: 10px;
+}
+
+body.iphone-mode .onboarding-card {
+  width: min(340px, calc(100% - 16px));
 }
 
 body.iphone-mode .main-brand-title span {

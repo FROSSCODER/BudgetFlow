@@ -3,6 +3,11 @@ const loggedOutScreen = document.getElementById("loggedOutScreen");
 const addProfileScreen = document.getElementById("addProfileScreen");
 const loggedOutProfiles = document.getElementById("loggedOutProfiles");
 const toggleOtherProfilesBtn = document.getElementById("toggleOtherProfilesBtn");
+const addProfileFromLogoutBtn = document.getElementById("addProfileFromLogoutBtn");
+const logoutStatusTime = document.getElementById("logoutStatusTime");
+const logoutLanguageBtn = document.getElementById("logoutLanguageBtn");
+const logoutLanguageMenu = document.getElementById("logoutLanguageMenu");
+const logoutSwipeHint = document.getElementById("logoutSwipeHint");
 
 const lockOverlay = document.getElementById("lockOverlay");
 const lockBackBtn = document.getElementById("lockBackBtn");
@@ -112,6 +117,12 @@ const moduleSpillOver = document.getElementById("moduleSpillOver");
 const toggleLayoutEditBtn = document.getElementById("toggleLayoutEditBtn");
 const settingsGroups = Array.from(document.querySelectorAll("#settingsPanel .settings-group"));
 const securitySettingsGroup = document.getElementById("securitySettingsGroup");
+const onboardingOverlay = document.getElementById("onboardingOverlay");
+const onboardingTitle = document.getElementById("onboardingTitle");
+const onboardingBody = document.getElementById("onboardingBody");
+const onboardingDots = document.getElementById("onboardingDots");
+const onboardingSkipBtn = document.getElementById("onboardingSkipBtn");
+const onboardingNextBtn = document.getElementById("onboardingNextBtn");
 
 const STORAGE_KEY = "budgetflow-state-v4";
 const AUTO_LOGOUT_AFTER_HIDDEN_MS = 10 * 1000;
@@ -122,6 +133,22 @@ const AUTH_LOCK_MAX_MS = 30 * 60 * 1000;
 const AUTO_WIPE_THRESHOLD = 10;
 const BACKUP_KDF_ITERATIONS = 200000;
 const DEFAULT_LAYOUT_ORDER = ["summary", "add-expense", "breakdown", "expenses", "spillover"];
+const DEFAULT_LANGUAGE = "en";
+const SUPPORTED_LANGUAGES = ["en", "es", "fr", "mi"];
+const ONBOARDING_STEPS = [
+  {
+    title: "Welcome to BudgetFlow",
+    body: "This quick guide shows where to track spending, switch profiles, and customize your dashboard.",
+  },
+  {
+    title: "Track your month",
+    body: "Set your income and saving target, then add expenses to see your remaining budget update live.",
+  },
+  {
+    title: "Make it yours",
+    body: "Open Settings to change appearance, security, and move dashboard tiles into your preferred order.",
+  },
+];
 
 const state = {
   settings: {
@@ -134,6 +161,7 @@ const state = {
     darkModeScheduled: false,
     darkModeStart: "21:00",
     darkModeEnd: "07:00",
+    language: DEFAULT_LANGUAGE,
     autoWipeEnabled: false,
     panicShortcutEnabled: false,
     layoutOrder: [...DEFAULT_LAYOUT_ORDER],
@@ -167,6 +195,7 @@ let lockContext = "app";
 let isSwipeUnlockTransitioning = false;
 let allowSecurityPanelOpen = false;
 let isLayoutEditMode = false;
+let onboardingStepIndex = 0;
 
 function createBudgetData(overrides = {}) {
   return {
@@ -198,6 +227,7 @@ function makeAccount(name, passcode = "") {
     authLockUntil: 0,
     touchIdEnabled: false,
     touchIdCredentialId: null,
+    onboardingComplete: false,
     profileImage: null,
     budget: createBudgetData(),
   };
@@ -218,6 +248,7 @@ function normalizeAccount(account) {
     authLockUntil: Math.max(0, Number(account.authLockUntil) || 0),
     touchIdEnabled: Boolean(account.touchIdEnabled),
     touchIdCredentialId: account.touchIdCredentialId || null,
+    onboardingComplete: Boolean(account.onboardingComplete),
     profileImage: account.profileImage || null,
     budget: createBudgetData({
       income: budget.income,
@@ -549,9 +580,7 @@ function renderLoggedOutProfiles() {
 
   const hasOtherProfiles = others.length > 0;
   toggleOtherProfilesBtn.classList.toggle("hidden-module", !hasOtherProfiles);
-  if (hasOtherProfiles) {
-    toggleOtherProfilesBtn.textContent = showOtherProfilesOnLoggedOut ? "Hide Other Profiles" : "Show Other Profiles";
-  }
+  applyLanguage();
 }
 
 function shouldUseSwipeUnlock() {
@@ -766,6 +795,9 @@ function loadState() {
       state.settings.darkModeScheduled = Boolean(parsed.settings.darkModeScheduled);
       state.settings.darkModeStart = parsed.settings.darkModeStart || "21:00";
       state.settings.darkModeEnd = parsed.settings.darkModeEnd || "07:00";
+      state.settings.language = SUPPORTED_LANGUAGES.includes(parsed.settings.language)
+        ? parsed.settings.language
+        : DEFAULT_LANGUAGE;
       state.settings.autoWipeEnabled = Boolean(parsed.settings.autoWipeEnabled);
       state.settings.panicShortcutEnabled = Boolean(parsed.settings.panicShortcutEnabled);
       const layoutOrder = Array.isArray(parsed.settings.layoutOrder)
@@ -1077,9 +1109,7 @@ function setLayoutEditMode(enabled) {
   isLayoutEditMode = Boolean(enabled);
   document.body.classList.toggle("layout-edit-mode", isLayoutEditMode);
   layoutEditBanner?.classList.toggle("hidden-module", !isLayoutEditMode);
-  if (toggleLayoutEditBtn) {
-    toggleLayoutEditBtn.textContent = isLayoutEditMode ? "Done Moving Tiles" : "Customize Dashboard Layout";
-  }
+  applyLanguage();
   renderTileMoveControls();
 }
 
@@ -1154,13 +1184,124 @@ function setActiveTab(tabName) {
   requestAnimationFrame(updateMainScrollLock);
 }
 
+function getLanguageLocale() {
+  switch (state.settings.language) {
+    case "es":
+      return "es-ES";
+    case "fr":
+      return "fr-FR";
+    case "mi":
+      return "mi-NZ";
+    default:
+      return "en-NZ";
+  }
+}
+
 function updateStatusTime() {
   const now = new Date();
-  statusTime.textContent = now.toLocaleTimeString("en-NZ", {
+  const locale = getLanguageLocale();
+  const timeText = now.toLocaleTimeString(locale, {
     hour: "numeric",
     minute: "2-digit",
   });
+  statusTime.textContent = timeText;
+  if (logoutStatusTime) {
+    logoutStatusTime.textContent = timeText;
+  }
   applyDarkMode();
+}
+
+function applyLanguage() {
+  const code = state.settings.language;
+  document.documentElement.lang = code;
+  const copy = {
+    en: {
+      showProfiles: "Show Other Profiles",
+      hideProfiles: "Hide Other Profiles",
+      addProfile: "Add New Profile",
+      swipe: "Swipe up to continue",
+      layoutOn: "Layout mode on: use Up/Down on tiles",
+      customize: "Customize Dashboard Layout",
+      doneMove: "Done Moving Tiles",
+      introSkip: "Skip",
+      introNext: "Next",
+      introDone: "Finish",
+    },
+    es: {
+      showProfiles: "Mostrar otros perfiles",
+      hideProfiles: "Ocultar otros perfiles",
+      addProfile: "Agregar perfil",
+      swipe: "Desliza hacia arriba para continuar",
+      layoutOn: "Modo de diseno activo: usa Subir/Bajar en las tarjetas",
+      customize: "Personalizar panel",
+      doneMove: "Terminar edicion",
+      introSkip: "Saltar",
+      introNext: "Siguiente",
+      introDone: "Finalizar",
+    },
+    fr: {
+      showProfiles: "Afficher autres profils",
+      hideProfiles: "Masquer autres profils",
+      addProfile: "Ajouter un profil",
+      swipe: "Glissez vers le haut pour continuer",
+      layoutOn: "Mode deplacement actif: utilisez Haut/Bas sur les blocs",
+      customize: "Personnaliser le tableau",
+      doneMove: "Terminer",
+      introSkip: "Ignorer",
+      introNext: "Suivant",
+      introDone: "Terminer",
+    },
+    mi: {
+      showProfiles: "Whakaatu atu etahi kaute",
+      hideProfiles: "Huna atu etahi kaute",
+      addProfile: "Taapiri kaute hou",
+      swipe: "Kumea ake kia haere tonu",
+      layoutOn: "Kei te aratau nuku: whakamahia Runga/Raro i nga waahanga",
+      customize: "Whakarite papa matua",
+      doneMove: "Kua mutu",
+      introSkip: "Peke",
+      introNext: "Panuku",
+      introDone: "Mutu",
+    },
+  }[code] || {
+    showProfiles: "Show Other Profiles",
+    hideProfiles: "Hide Other Profiles",
+    addProfile: "Add New Profile",
+    swipe: "Swipe up to continue",
+    layoutOn: "Layout mode on: use Up/Down on tiles",
+    customize: "Customize Dashboard Layout",
+    doneMove: "Done Moving Tiles",
+    introSkip: "Skip",
+    introNext: "Next",
+    introDone: "Finish",
+  };
+
+  if (toggleOtherProfilesBtn) {
+    const hasOtherProfiles = state.security.accounts.length > 1;
+    if (hasOtherProfiles) {
+      toggleOtherProfilesBtn.textContent = showOtherProfilesOnLoggedOut ? copy.hideProfiles : copy.showProfiles;
+    }
+  }
+  if (addProfileFromLogoutBtn) addProfileFromLogoutBtn.textContent = copy.addProfile;
+  const swipeText = logoutSwipeHint?.querySelector("span:last-child");
+  if (swipeText) swipeText.textContent = copy.swipe;
+  if (layoutEditBanner) layoutEditBanner.textContent = copy.layoutOn;
+  if (toggleLayoutEditBtn) {
+    toggleLayoutEditBtn.textContent = isLayoutEditMode ? copy.doneMove : copy.customize;
+  }
+  if (onboardingSkipBtn) onboardingSkipBtn.textContent = copy.introSkip;
+  if (onboardingNextBtn) {
+    onboardingNextBtn.textContent =
+      onboardingStepIndex >= ONBOARDING_STEPS.length - 1 ? copy.introDone : copy.introNext;
+  }
+}
+
+function setLanguage(code) {
+  if (!SUPPORTED_LANGUAGES.includes(code)) return;
+  state.settings.language = code;
+  applyLanguage();
+  updateStatusTime();
+  saveState();
 }
 
 function timeStringToMinutes(timeString) {
@@ -1250,6 +1391,7 @@ function setScreen(mode) {
 
 function showLoggedOutScreen() {
   setLayoutEditMode(false);
+  onboardingOverlay.classList.add("hidden-module");
   resetLogoutSwipeGate();
   showOtherProfilesOnLoggedOut = false;
   renderLoggedOutProfiles();
@@ -1264,6 +1406,39 @@ function showAddProfileScreen(returnMode = "app") {
   addProfilePageForm.reset();
   setScreen("addProfile");
   setTimeout(() => newProfileNameInput.focus(), 120);
+}
+
+function renderOnboardingStep() {
+  const step = ONBOARDING_STEPS[onboardingStepIndex] || ONBOARDING_STEPS[0];
+  onboardingTitle.textContent = step.title;
+  onboardingBody.textContent = step.body;
+  onboardingDots.innerHTML = "";
+  ONBOARDING_STEPS.forEach((_, index) => {
+    const dot = document.createElement("span");
+    if (index === onboardingStepIndex) dot.classList.add("active");
+    onboardingDots.appendChild(dot);
+  });
+  applyLanguage();
+}
+
+function openOnboarding() {
+  onboardingStepIndex = 0;
+  onboardingOverlay.classList.remove("hidden-module");
+  renderOnboardingStep();
+}
+
+function closeOnboarding(markComplete = true) {
+  onboardingOverlay.classList.add("hidden-module");
+  if (!markComplete) return;
+  const active = ensureActiveAccount();
+  active.onboardingComplete = true;
+  saveState();
+}
+
+function maybeShowOnboarding() {
+  const active = ensureActiveAccount();
+  if (active.onboardingComplete) return;
+  openOnboarding();
 }
 
 function configureLockMode() {
@@ -1562,7 +1737,9 @@ function unlockApp() {
   retryTouchIdBtn.classList.add("hidden-module");
   if (wasSecurityGate) {
     openSecuritySettingsAfterGate();
+    return;
   }
+  maybeShowOnboarding();
 }
 
 function failLock(message, options = {}) {
@@ -1597,6 +1774,8 @@ function refresh() {
   applyIphoneMode();
   applyDarkMode();
   applyColorScheme();
+  applyLanguage();
+  updateStatusTime();
   requestAnimationFrame(updateMainScrollLock);
   saveState();
 }
@@ -1832,6 +2011,10 @@ logoutBtn.addEventListener("click", () => {
   showLoggedOutScreen();
 });
 
+addProfileFromLogoutBtn.addEventListener("click", () => {
+  showAddProfileScreen("loggedOut");
+});
+
 loggedOutProfiles.addEventListener("click", (event) => {
   const button = event.target.closest("[data-account-id]");
   if (!button) return;
@@ -1853,6 +2036,23 @@ document.addEventListener("click", (event) => {
   if (!event.target.closest(".account-menu-wrap")) {
     showAccountMenu(false);
   }
+  if (!event.target.closest(".logout-language-wrap")) {
+    logoutLanguageMenu.classList.add("hidden-module");
+  }
+});
+
+logoutLanguageBtn.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  const hidden = logoutLanguageMenu.classList.contains("hidden-module");
+  logoutLanguageMenu.classList.toggle("hidden-module", !hidden);
+});
+
+logoutLanguageMenu.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-language-code]");
+  if (!button) return;
+  setLanguage(button.dataset.languageCode);
+  logoutLanguageMenu.classList.add("hidden-module");
 });
 
 document.addEventListener("visibilitychange", () => {
@@ -1874,6 +2074,19 @@ document.addEventListener("visibilitychange", () => {
 
 window.addEventListener("resize", () => {
   requestAnimationFrame(updateMainScrollLock);
+});
+
+onboardingSkipBtn.addEventListener("click", () => {
+  closeOnboarding(true);
+});
+
+onboardingNextBtn.addEventListener("click", () => {
+  if (onboardingStepIndex >= ONBOARDING_STEPS.length - 1) {
+    closeOnboarding(true);
+    return;
+  }
+  onboardingStepIndex += 1;
+  renderOnboardingStep();
 });
 
 lockForm.addEventListener("submit", (event) => {
@@ -2097,6 +2310,7 @@ resetButton.addEventListener("click", () => {
   state.settings.darkModeScheduled = false;
   state.settings.darkModeStart = "21:00";
   state.settings.darkModeEnd = "07:00";
+  state.settings.language = DEFAULT_LANGUAGE;
   state.settings.autoWipeEnabled = false;
   state.settings.panicShortcutEnabled = false;
   state.settings.layoutOrder = [...DEFAULT_LAYOUT_ORDER];

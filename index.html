@@ -19,10 +19,23 @@
     <div class="bg-shape bg-shape-2"></div>
 
     <div id="loggedOutScreen" class="logged-out-screen">
+      <div class="logged-out-status" aria-label="Logout status bar">
+        <span id="logoutStatusTime" class="status-chip">--:--</span>
+        <div class="logout-language-wrap">
+          <button id="logoutLanguageBtn" class="logout-language-btn" type="button" aria-label="Change language">🌐</button>
+          <div id="logoutLanguageMenu" class="logout-language-menu hidden-module" aria-label="Language menu">
+            <button type="button" data-language-code="en">English</button>
+            <button type="button" data-language-code="es">Espanol</button>
+            <button type="button" data-language-code="fr">Francais</button>
+            <button type="button" data-language-code="mi">Te Reo Maori</button>
+          </div>
+        </div>
+      </div>
       <div class="logged-out-wrap">
         <h1 class="logged-out-title main-brand-title"><span>Budget</span><span>Flow</span></h1>
         <div id="loggedOutProfiles" class="logged-out-profiles" aria-label="Choose profile"></div>
         <button id="toggleOtherProfilesBtn" type="button" class="show-other-profiles-btn">Show Other Profiles</button>
+        <button id="addProfileFromLogoutBtn" type="button" class="show-other-profiles-btn">Add New Profile</button>
         <p id="logoutSwipeHint" class="logout-swipe-hint" aria-live="polite">
           <span class="swipe-chevron">⌃</span>
           <span>Swipe up to continue</span>
@@ -403,6 +416,18 @@
         </article>
       </section>
     </main>
+
+    <div id="onboardingOverlay" class="onboarding-overlay hidden-module">
+      <article class="onboarding-card">
+        <h2 id="onboardingTitle">Welcome to BudgetFlow</h2>
+        <p id="onboardingBody">Track your budget, spending, and profiles in one place.</p>
+        <div id="onboardingDots" class="onboarding-dots" aria-label="Intro steps"></div>
+        <div class="onboarding-actions">
+          <button id="onboardingSkipBtn" type="button" class="secondary-btn">Skip</button>
+          <button id="onboardingNextBtn" type="button">Next</button>
+        </div>
+      </article>
+    </div>
 
     <script src="app.js"></script>
   </body>
