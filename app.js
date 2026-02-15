@@ -1576,7 +1576,7 @@ statusSettingsBtn.addEventListener("click", () => {
 
 statusLockBtn.addEventListener("click", () => {
   showAccountMenu(false);
-  openLockOverlay("app");
+  showLoggedOutScreen();
 });
 
 statusAccountBtn.addEventListener("click", (event) => {
