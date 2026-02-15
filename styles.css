@@ -25,6 +25,11 @@ body {
   overflow-y: auto;
 }
 
+body.main-scroll-locked {
+  overflow-y: hidden;
+  overscroll-behavior-y: none;
+}
+
 body.scheme-forest {
   --primary: #1f9d68;
   --accent: #7fcf7d;

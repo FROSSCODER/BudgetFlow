@@ -1077,6 +1077,18 @@ function setLayoutEditMode(enabled) {
   renderTileMoveControls();
 }
 
+function updateMainScrollLock() {
+  const isAppVisible = appShell.classList.contains("app-visible");
+  const isPlannerActive = plannerPanel.classList.contains("active");
+  if (!isAppVisible || !isPlannerActive) {
+    document.body.classList.remove("main-scroll-locked");
+    return;
+  }
+
+  const needsScroll = document.documentElement.scrollHeight > window.innerHeight + 2;
+  document.body.classList.toggle("main-scroll-locked", !needsScroll);
+}
+
 function applyCompactMode() {
   document.body.classList.toggle("compact", state.settings.compactMode);
 }
@@ -1133,6 +1145,7 @@ function setActiveTab(tabName) {
   }
   statusSettingsBtn.classList.toggle("active", !planner);
   statusSettingsBtn.setAttribute("aria-label", planner ? "Open Settings" : "Back to Planner");
+  requestAnimationFrame(updateMainScrollLock);
 }
 
 function updateStatusTime() {
@@ -1226,6 +1239,7 @@ function setScreen(mode) {
   lockOverlay.classList.toggle("active-screen", showLock);
   appShell.classList.toggle("app-visible", showApp);
   appShell.classList.toggle("app-locked", !showApp);
+  requestAnimationFrame(updateMainScrollLock);
 }
 
 function showLoggedOutScreen() {
@@ -1577,6 +1591,7 @@ function refresh() {
   applyIphoneMode();
   applyDarkMode();
   applyColorScheme();
+  requestAnimationFrame(updateMainScrollLock);
   saveState();
 }
 
@@ -1842,6 +1857,10 @@ document.addEventListener("visibilitychange", () => {
       showLoggedOutScreen();
     }
   }
+});
+
+window.addEventListener("resize", () => {
+  requestAnimationFrame(updateMainScrollLock);
 });
 
 lockForm.addEventListener("submit", (event) => {
