@@ -166,33 +166,33 @@
       </header>
 
       <section id="plannerPanel" class="tab-panel active">
-        <section id="moduleSummary" class="grid stats-grid" aria-label="Budget overview">
-          <article class="card stat-card">
-            <h2>Monthly Income</h2>
-            <label>
-              <span>Income</span>
-              <input id="incomeInput" type="number" min="0" step="0.01" value="4000" />
-            </label>
-          </article>
+        <div id="plannerTiles" class="planner-tiles">
+          <section id="moduleSummary" class="grid stats-grid planner-tile" data-layout-id="summary" aria-label="Budget overview">
+            <article class="card stat-card">
+              <h2>Monthly Income</h2>
+              <label>
+                <span>Income</span>
+                <input id="incomeInput" type="number" min="0" step="0.01" value="4000" />
+              </label>
+            </article>
 
-          <article class="card stat-card">
-            <h2>Saving Target</h2>
-            <label>
-              <span>Target</span>
-              <input id="targetInput" type="number" min="0" step="0.01" value="800" />
-            </label>
-          </article>
+            <article class="card stat-card">
+              <h2>Saving Target</h2>
+              <label>
+                <span>Target</span>
+                <input id="targetInput" type="number" min="0" step="0.01" value="800" />
+              </label>
+            </article>
 
-          <article class="card stat-card accent">
-            <h2>Remaining Budget</h2>
-            <p id="remainingBudget" class="big-number">$0.00</p>
-            <p id="progressText" class="tiny-muted"></p>
-            <p id="cycleText" class="tiny-muted"></p>
-          </article>
-        </section>
+            <article class="card stat-card accent">
+              <h2>Remaining Budget</h2>
+              <p id="remainingBudget" class="big-number">$0.00</p>
+              <p id="progressText" class="tiny-muted"></p>
+              <p id="cycleText" class="tiny-muted"></p>
+            </article>
+          </section>
 
-        <section class="grid content-grid">
-          <article id="moduleAddExpense" class="card">
+          <article id="moduleAddExpense" class="card planner-tile" data-layout-id="add-expense">
             <h2>Add Expense</h2>
             <form id="expenseForm" class="expense-form">
               <label>
@@ -220,24 +220,22 @@
             </form>
           </article>
 
-          <article id="moduleBreakdown" class="card">
+          <article id="moduleBreakdown" class="card planner-tile" data-layout-id="breakdown">
             <h2>Spending Breakdown</h2>
             <div id="categoryBars" class="bars"></div>
           </article>
-        </section>
 
-        <section class="grid content-grid">
-          <article id="moduleExpenses" class="card">
+          <article id="moduleExpenses" class="card planner-tile" data-layout-id="expenses">
             <h2>Recent Expenses</h2>
             <ul id="expenseList" class="expense-list"></ul>
           </article>
 
-          <article class="card">
+          <article id="moduleSpillOver" class="card planner-tile" data-layout-id="spillover">
             <h2>Spill Over</h2>
             <ul id="spillOverList" class="spill-list"></ul>
             <div id="spillOverTotal" class="spill-total">Total Spill Over: $0.00</div>
           </article>
-        </section>
+        </div>
       </section>
 
       <section id="settingsPanel" class="tab-panel">
@@ -346,6 +344,7 @@
                   <input id="toggleExpenses" type="checkbox" checked />
                 </label>
               </div>
+              <button id="toggleLayoutEditBtn" type="button" class="secondary-btn">Customize Dashboard Layout</button>
             </div>
           </details>
 

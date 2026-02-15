@@ -39,6 +39,7 @@ const logoutBtn = document.getElementById("logoutBtn");
 
 const plannerPanel = document.getElementById("plannerPanel");
 const settingsPanel = document.getElementById("settingsPanel");
+const plannerTiles = document.getElementById("plannerTiles");
 
 const incomeInput = document.getElementById("incomeInput");
 const targetInput = document.getElementById("targetInput");
@@ -106,6 +107,8 @@ const moduleSummary = document.getElementById("moduleSummary");
 const moduleAddExpense = document.getElementById("moduleAddExpense");
 const moduleBreakdown = document.getElementById("moduleBreakdown");
 const moduleExpenses = document.getElementById("moduleExpenses");
+const moduleSpillOver = document.getElementById("moduleSpillOver");
+const toggleLayoutEditBtn = document.getElementById("toggleLayoutEditBtn");
 const settingsGroups = Array.from(document.querySelectorAll("#settingsPanel .settings-group"));
 const securitySettingsGroup = document.getElementById("securitySettingsGroup");
 
@@ -117,6 +120,7 @@ const AUTH_LOCK_BASE_MS = 2 * 60 * 1000;
 const AUTH_LOCK_MAX_MS = 30 * 60 * 1000;
 const AUTO_WIPE_THRESHOLD = 10;
 const BACKUP_KDF_ITERATIONS = 200000;
+const DEFAULT_LAYOUT_ORDER = ["summary", "add-expense", "breakdown", "expenses", "spillover"];
 
 const state = {
   settings: {
@@ -131,6 +135,7 @@ const state = {
     darkModeEnd: "07:00",
     autoWipeEnabled: false,
     panicShortcutEnabled: false,
+    layoutOrder: [...DEFAULT_LAYOUT_ORDER],
     modules: {
       summary: true,
       addExpense: true,
@@ -160,6 +165,7 @@ let pendingSetupPin = "";
 let lockContext = "app";
 let isSwipeUnlockTransitioning = false;
 let allowSecurityPanelOpen = false;
+let isLayoutEditMode = false;
 
 function createBudgetData(overrides = {}) {
   return {
@@ -761,6 +767,10 @@ function loadState() {
       state.settings.darkModeEnd = parsed.settings.darkModeEnd || "07:00";
       state.settings.autoWipeEnabled = Boolean(parsed.settings.autoWipeEnabled);
       state.settings.panicShortcutEnabled = Boolean(parsed.settings.panicShortcutEnabled);
+      const layoutOrder = Array.isArray(parsed.settings.layoutOrder)
+        ? parsed.settings.layoutOrder.filter((value) => typeof value === "string")
+        : [];
+      state.settings.layoutOrder = layoutOrder.length ? layoutOrder : [...DEFAULT_LAYOUT_ORDER];
 
       const modules = parsed.settings.modules || {};
       state.settings.modules = {
@@ -963,6 +973,108 @@ function applyModulesVisibility() {
   moduleAddExpense.classList.toggle("hidden-module", !state.settings.modules.addExpense);
   moduleBreakdown.classList.toggle("hidden-module", !state.settings.modules.breakdown);
   moduleExpenses.classList.toggle("hidden-module", !state.settings.modules.expenses);
+  moduleSpillOver.classList.toggle("hidden-module", !state.settings.modules.expenses);
+}
+
+function getPlannerTileElements() {
+  return Array.from(plannerTiles.querySelectorAll("[data-layout-id]"));
+}
+
+function normalizeLayoutOrder() {
+  const tileIds = getPlannerTileElements().map((tile) => tile.dataset.layoutId);
+  const seen = new Set();
+  const normalized = [];
+
+  for (const id of state.settings.layoutOrder || []) {
+    if (!tileIds.includes(id) || seen.has(id)) continue;
+    normalized.push(id);
+    seen.add(id);
+  }
+
+  for (const id of tileIds) {
+    if (seen.has(id)) continue;
+    normalized.push(id);
+    seen.add(id);
+  }
+
+  state.settings.layoutOrder = normalized;
+}
+
+function applyPlannerLayoutOrder() {
+  normalizeLayoutOrder();
+  const tilesById = new Map(getPlannerTileElements().map((tile) => [tile.dataset.layoutId, tile]));
+  for (const id of state.settings.layoutOrder) {
+    const tile = tilesById.get(id);
+    if (!tile) continue;
+    plannerTiles.appendChild(tile);
+  }
+  renderTileMoveControls();
+}
+
+function movePlannerTile(layoutId, delta) {
+  normalizeLayoutOrder();
+  const list = state.settings.layoutOrder;
+  const index = list.indexOf(layoutId);
+  if (index === -1) return;
+  const nextIndex = index + delta;
+  if (nextIndex < 0 || nextIndex >= list.length) return;
+  [list[index], list[nextIndex]] = [list[nextIndex], list[index]];
+  applyPlannerLayoutOrder();
+  saveState();
+}
+
+function renderTileMoveControls() {
+  const tiles = getPlannerTileElements();
+  const order = state.settings.layoutOrder || [];
+
+  tiles.forEach((tile) => {
+    const existing = tile.querySelector(".tile-move-controls");
+    if (existing) existing.remove();
+    if (!isLayoutEditMode) return;
+
+    const id = tile.dataset.layoutId;
+    const index = order.indexOf(id);
+    if (index === -1) return;
+
+    const controls = document.createElement("div");
+    controls.className = "tile-move-controls";
+
+    const up = document.createElement("button");
+    up.type = "button";
+    up.className = "tile-move-btn";
+    up.textContent = "↑";
+    up.title = "Move up";
+    up.disabled = index === 0;
+    up.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      movePlannerTile(id, -1);
+    });
+
+    const down = document.createElement("button");
+    down.type = "button";
+    down.className = "tile-move-btn";
+    down.textContent = "↓";
+    down.title = "Move down";
+    down.disabled = index === order.length - 1;
+    down.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      movePlannerTile(id, 1);
+    });
+
+    controls.append(up, down);
+    tile.prepend(controls);
+  });
+}
+
+function setLayoutEditMode(enabled) {
+  isLayoutEditMode = Boolean(enabled);
+  document.body.classList.toggle("layout-edit-mode", isLayoutEditMode);
+  if (toggleLayoutEditBtn) {
+    toggleLayoutEditBtn.textContent = isLayoutEditMode ? "Done Moving Tiles" : "Customize Dashboard Layout";
+  }
+  renderTileMoveControls();
 }
 
 function applyCompactMode() {
@@ -1117,6 +1229,7 @@ function setScreen(mode) {
 }
 
 function showLoggedOutScreen() {
+  setLayoutEditMode(false);
   resetLogoutSwipeGate();
   showOtherProfilesOnLoggedOut = false;
   renderLoggedOutProfiles();
@@ -1459,6 +1572,7 @@ function refresh() {
   renderExpenses();
   renderSpillOver();
   applyModulesVisibility();
+  applyPlannerLayoutOrder();
   applyCompactMode();
   applyIphoneMode();
   applyDarkMode();
@@ -1564,6 +1678,14 @@ toggleExpenses.addEventListener("change", () => {
   state.settings.modules.expenses = toggleExpenses.checked;
   refresh();
 });
+
+if (toggleLayoutEditBtn) {
+  toggleLayoutEditBtn.addEventListener("click", () => {
+    setActiveTab("planner");
+    setLayoutEditMode(!isLayoutEditMode);
+    saveState();
+  });
+}
 
 statusSettingsBtn.addEventListener("click", () => {
   const showingSettings = settingsPanel.classList.contains("active");
@@ -1945,6 +2067,7 @@ resetButton.addEventListener("click", () => {
   state.settings.darkModeEnd = "07:00";
   state.settings.autoWipeEnabled = false;
   state.settings.panicShortcutEnabled = false;
+  state.settings.layoutOrder = [...DEFAULT_LAYOUT_ORDER];
   state.settings.modules = {
     summary: true,
     addExpense: true,

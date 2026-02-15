@@ -556,6 +556,20 @@ h3 {
   margin-bottom: 14px;
 }
 
+.planner-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.planner-tile {
+  position: relative;
+}
+
+#moduleSummary.planner-tile {
+  grid-column: 1 / -1;
+}
+
 .stats-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -938,6 +952,41 @@ button:hover {
   gap: 8px;
 }
 
+.tile-move-controls {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  display: inline-flex;
+  gap: 6px;
+  z-index: 5;
+}
+
+.tile-move-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+  padding: 0;
+  font-size: 0.92rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+}
+
+.tile-move-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+body.layout-edit-mode .planner-tile {
+  outline: 2px dashed rgba(31, 122, 236, 0.35);
+  outline-offset: 2px;
+}
+
 .profiles-manager {
   display: grid;
   gap: 8px;
@@ -1272,6 +1321,10 @@ body.iphone-mode .status-chip.account-chip {
 body.iphone-mode .stats-grid,
 body.iphone-mode .content-grid,
 body.iphone-mode .expense-form {
+  grid-template-columns: 1fr;
+}
+
+body.iphone-mode .planner-tiles {
   grid-template-columns: 1fr;
 }
 
