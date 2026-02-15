@@ -159,6 +159,7 @@ let pinPadValue = "";
 let pendingSetupPin = "";
 let lockContext = "app";
 let isSwipeUnlockTransitioning = false;
+let allowSecurityPanelOpen = false;
 
 function createBudgetData(overrides = {}) {
   return {
@@ -1065,29 +1066,29 @@ function showAccountMenu(show) {
 }
 
 function openSecuritySettingsAfterGate() {
+  allowSecurityPanelOpen = true;
   setActiveTab("settings");
   settingsGroups.forEach((group) => {
     group.open = group === securitySettingsGroup;
   });
+  setTimeout(() => {
+    allowSecurityPanelOpen = false;
+  }, 0);
 }
 
 function initSettingsAccordion() {
   if (!settingsGroups.length) return;
 
-  const securitySummary = securitySettingsGroup?.querySelector("summary");
-  if (securitySummary) {
-    const openSecurityGate = (event) => {
-      if (securitySettingsGroup.open) return;
+  if (securitySettingsGroup) {
+    securitySettingsGroup.addEventListener("toggle", () => {
+      if (!securitySettingsGroup.open) return;
+      if (allowSecurityPanelOpen) return;
       const active = ensureActiveAccount();
       if (!hasAccountPasscode(active)) return;
-      event.preventDefault();
-      event.stopPropagation();
+      securitySettingsGroup.open = false;
       if (lockOverlay.classList.contains("active-screen")) return;
       openLockOverlay("security");
-    };
-
-    securitySummary.addEventListener("click", openSecurityGate);
-    securitySummary.addEventListener("touchend", openSecurityGate, { passive: false });
+    });
   }
 
   settingsGroups.forEach((group) => {
