@@ -40,6 +40,7 @@ const logoutBtn = document.getElementById("logoutBtn");
 const plannerPanel = document.getElementById("plannerPanel");
 const settingsPanel = document.getElementById("settingsPanel");
 const plannerTiles = document.getElementById("plannerTiles");
+const layoutEditBanner = document.getElementById("layoutEditBanner");
 
 const incomeInput = document.getElementById("incomeInput");
 const targetInput = document.getElementById("targetInput");
@@ -1075,6 +1076,7 @@ function renderTileMoveControls() {
 function setLayoutEditMode(enabled) {
   isLayoutEditMode = Boolean(enabled);
   document.body.classList.toggle("layout-edit-mode", isLayoutEditMode);
+  layoutEditBanner?.classList.toggle("hidden-module", !isLayoutEditMode);
   if (toggleLayoutEditBtn) {
     toggleLayoutEditBtn.textContent = isLayoutEditMode ? "Done Moving Tiles" : "Customize Dashboard Layout";
   }
@@ -1698,12 +1700,19 @@ toggleExpenses.addEventListener("change", () => {
   refresh();
 });
 
+function toggleLayoutEditFromSettings(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  setActiveTab("planner");
+  setLayoutEditMode(!isLayoutEditMode);
+  saveState();
+}
+
 if (toggleLayoutEditBtn) {
-  toggleLayoutEditBtn.addEventListener("click", () => {
-    setActiveTab("planner");
-    setLayoutEditMode(!isLayoutEditMode);
-    saveState();
-  });
+  toggleLayoutEditBtn.addEventListener("click", toggleLayoutEditFromSettings);
+  toggleLayoutEditBtn.addEventListener("touchend", toggleLayoutEditFromSettings, { passive: false });
 }
 
 statusSettingsBtn.addEventListener("click", () => {
